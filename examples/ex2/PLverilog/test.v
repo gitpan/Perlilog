@@ -1,3 +1,7 @@
+// This is a generated file. Do not edit -- changes will be lost
+// Created by Perlilog v0.3 on Tue Nov 11 19:42:08 2003
+// Originating object: Template Verilog Obj. 'test'
+
 `timescale 1ns / 10ps
 
 module test(din, ack, clk, rst, cyc, stb, we, adr, dout);

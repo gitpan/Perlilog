@@ -55,7 +55,7 @@ END {
 @Perlilog::ISA = (Exporter);
 @Perlilog::EXPORT = qw[&init &override &underride &inherit &inheritdir &interface &interfaceclass
 		       &constreset &definedclass &globalobj &execute];
-$Perlilog::VERSION = '0.2';
+$Perlilog::VERSION = '0.3';
 $Perlilog::STARTTIME = localtime();
 
 $Perlilog::perlilogflag = 0;

@@ -1,3 +1,7 @@
+// This is a generated file. Do not edit -- changes will be lost
+// Created by Perlilog v0.3 on Tue Nov 11 19:42:08 2003
+// Originating object: Template Verilog Obj. 'rom1'
+
 `timescale 1ns / 10ps
 
 module rom1(wb_clk_i, wb_rst_i, wb_we_i, wb_stb_i, wb_cyc_i, wb_adr_i,

@@ -63,6 +63,7 @@ examples/ex3/PLverilog/adder.v
 examples/ex3/PLverilog/logic.v
 examples/ex3/PLverilog/single_master_wb_controller.v
 examples/ex3/PLverilog/perlilog.spj
+examples/ex2/trymulti.pl
 examples/ex2/top.pt
 examples/ex2/simple_rom2.pt
 examples/ex2/simple_rom.pt

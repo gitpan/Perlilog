@@ -62,10 +62,25 @@ sub files {
   $self->SUPER::files(@_);
   return if ($self->get('perlilog-no-file'));
 
-  $self->ontop($self->get('header-comment'));
+  my $twin = $self->get('perlilog-equivalent');
+  if ((defined $twin) && ($self->isobject($twin))) {
+    # All is fine if the 'verilog's stringwise EQUAL, no less
+    return if ($twin->get('verilog') eq $self->get('verilog'));
+
+    # Or yell... We don't stop execution, because we want to generate files
+    # for comparison.
+
+    fishy("The Verilog produced by ".$self->who." is not equal to ".
+	  $twin->who.", as should be due to the \'equivalent\' declaration of ".
+	  "the former. Compare files ".$self->get('vfile')." and ".
+	  $twin->get('vfile')."!\nNOTE: There Verilog code hereby produced should be ".
+	  "considered unreliable\n");
+  }
+
+  my $comment = $self->get('header-comment') || "";
 
   my $fname= $self->get('vfile');
-  my $verilog = $self->get('verilog');
+  my $verilog = $comment."\n".$self->get('verilog');
 
   # Now remove double line breaks (with possible associated white spaces)
   $verilog =~ s/([\s\t]*\n){3,}/\n\n/g; 
@@ -184,7 +199,6 @@ sub addins {
 
   $self->addvar($ins); # Reserve the name
 
-  $self->const('insname', $ins) unless $detached;
   return $ins;
 }
 
@@ -194,6 +208,26 @@ sub suggestins {
     unless (defined $name);
 
   return $self->suggestvar($name);
+}
+
+sub equivalent {
+  my ($self, $twin) = @_;
+
+  puke("Target is not an object\n")
+    unless ($self->isobject($twin));
+
+  puke($twin->who." can't be used as equivalent because it's declared as ".
+       "equivalent to another object\n")
+    if (defined $twin->get('perlilog-equivalent'));
+
+  puke($self->who." can't be declared as equivalent to another object, because ".
+       $self->get('perlilog-equivalent-lock')->who." depends on it\n")
+    if (defined $self->get('perlilog-equivalent-lock'));
+
+  $self->const('perlilog-equivalent', $twin);
+  $twin->set('perlilog-equivalent-lock', $self);
+
+  return 1;
 }
 
 sub bitrange {
@@ -277,7 +311,18 @@ sub headers {
   my $self = shift;
   $self->SUPER::headers(@_);
   return 0 if ($self->get('static'));
-  my $name = $self->get('name');
+
+  # If we have an equivalent object, we steal its name. This is necessary,
+  # so that the Verilog will be perfectly equivalent, and thus no warning
+  # is generated.
+
+  my $twin = $self->get('perlilog-equivalent');
+  my $name;
+  if ((defined $twin) && ($self->isobject($twin))) {
+    $name = $twin->get('name');
+  } else {
+    $name = $self->get('name');
+  }
 
   my @vars=$self->get('varslist');
 
@@ -384,12 +429,25 @@ sub instantiate {
 
   my $papa = $self->get('parent');
   return unless (ref $papa);
-  my $name = $self->get('name');
+
+  # Here we check for the 'equivalent' property. If it's an object, we copy the
+  # name of our twin sybling. If not, we const-assign "0" to this property, so
+  # noone else tries to change it later.
+
+  my $twin = $self->get('perlilog-equivalent');
+  my $name;
+  if ((defined $twin) && ($self->isobject($twin))) {
+    $name = $twin->get('name');
+  } else {
+    $self->const('perlilog-equivalent',0) unless (defined $twin); # Block the property
+    $name = $self->get('name');
+  }
+
   my $h = $self->get('inshash');
   my $extra = $self->get('insparams');
   $extra = '' unless (defined $extra);
-  my $insname = $self->suggestins;
-  $self->addins($insname);
+  my $insname = $papa->suggestins($name.'_ins');
+  $papa->addins($insname);
   my ($v, $pv);
   my @i = ();
 
