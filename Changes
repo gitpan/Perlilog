@@ -1,0 +1,10 @@
+Revision history for Perlilog:
+
+0.1 -- First release (Alpha)
+
+0.2 -- Beta release:
+ * Added support of the 'viasource' property
+ * Added support of inheritdir()
+ * Fixed linebreak(), so that a final "\n" is passed through to output
+
+
